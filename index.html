@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMB - Trung Tâm Công Nghệ Thông Tin & AI - Coming Soon</title>
+  
+  <!-- Tailwind CSS cho thiết kế nhanh chóng và tối ưu hóa -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font chữ Montserrat sang trọng giống trong hình mẫu -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      overflow: hidden;
+      /* KHẮC PHỤC LỖI NỀN: Thêm "no-repeat fixed" và "background-size: cover" để dải màu mịn màng, không bị lỗi lặp vệt màu */
+      background: linear-gradient(180deg, #02235a 0%, #0052d4 35%, #4364f7 70%, #6fb1fc 100%) no-repeat fixed;
+      background-size: cover;
+    }
+
+    /* Hiệu ứng phát sáng neon chuẩn xác cho khung tiêu đề */
+    .neon-capsule {
+      box-shadow: 0 0 15px rgba(34, 211, 238, 0.6), inset 0 0 10px rgba(34, 211, 238, 0.3);
+      border-color: rgba(34, 211, 238, 0.85);
+    }
+
+    /* Hiệu ứng hoạt họa lấp lánh xoay nhẹ cho các ngôi sao lóe sáng (Lens Flare) */
+    @keyframes shine {
+      0%, 100% {
+        transform: scale(0.95) rotate(0deg);
+        opacity: 0.8;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+      }
+      50% {
+        transform: scale(1.15) rotate(15deg);
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 1)) drop-shadow(0 0 15px rgba(56, 189, 248, 0.6));
+      }
+    }
+    .animate-shine {
+      animation: shine 4s ease-in-out infinite;
+    }
+
+    /* Hiệu ứng hào quang mặt trời / Ánh sáng từ chân trời */
+    .sun-glow {
+      position: absolute;
+      bottom: 40%;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 100vw;
+      height: 60vh;
+      background: radial-gradient(circle, rgba(111, 177, 252, 0.4) 0%, rgba(67, 100, 247, 0.1) 50%, rgba(0, 0, 0, 0) 80%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Đám mây cơ bản sử dụng màu trắng đục để kiểm soát độ trong suốt đồng bộ qua opacity */
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 1);
+      border-radius: 100px;
+      pointer-events: none;
+      width: var(--cloud-w);
+      height: calc(var(--cloud-w) * 0.35);
+      transition: opacity 0.3s;
+    }
+    
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 1);
+      border-radius: 50%;
+    }
+
+    .cloud::before {
+      width: calc(var(--cloud-w) * 0.45);
+      height: calc(var(--cloud-w) * 0.45);
+      top: calc(var(--cloud-w) * -0.22);
+      left: calc(var(--cloud-w) * 0.15);
+    }
+
+    .cloud::after {
+      width: calc(var(--cloud-w) * 0.35);
+      height: calc(var(--cloud-w) * 0.35);
+      top: calc(var(--cloud-w) * -0.15);
+      right: calc(var(--cloud-w) * 0.15);
+    }
+
+    /* Hiệu ứng trôi của mây rộng hơn để tránh giật hình */
+    @keyframes drift {
+      from { transform: translateX(-320px); }
+      to { transform: translateX(calc(100vw + 320px)); }
+    }
+
+    /* Sóng biển chuyển động phức hợp */
+    .wave-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 42vh;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .wave {
+      position: absolute;
+      bottom: 0;
+      width: 200%;
+      height: 100%;
+      background-repeat: repeat-x;
+      transform: translate3d(0, 0, 0);
+    }
+
+    /* Hiệu ứng sóng cuộn ngang kết hợp dập dềnh dọc */
+    @keyframes wave-flow-1 {
+      0% { transform: translateX(0) translateY(0); }
+      50% { transform: translateX(-25%) translateY(8px); }
+      100% { transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes wave-flow-2 {
+      0% { transform: translateX(-25%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
+      100% { transform: translateX(0) translateY(0); }
+    }
+    @keyframes wave-flow-3 {
+      0% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(0) translateY(10px); }
+      100% { transform: translateX(-25%) translateY(0); }
+    }
+
+    .wave-1 {
+      animation: wave-flow-1 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+      opacity: 0.85;
+      z-index: 12;
+    }
+
+    .wave-2 {
+      animation: wave-flow-2 18s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+      opacity: 0.6;
+      z-index: 11;
+    }
+
+    .wave-3 {
+      animation: wave-flow-3 30s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+      opacity: 0.4;
+      z-index: 10;
+    }
+
+    /* Điểm phản sáng lấp lánh trên mặt nước */
+    .sparkles {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40vh;
+      background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    /* Đường kẻ ngăn cách dọc lung linh giữa các khối số */
+    .divider-glow {
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%);
+      width: 1px;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Lớp mờ kính mỏng cho bảng cấu hình */
+    .glass-panel {
+      background: rgba(10, 25, 47, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="relative min-h-screen w-full flex flex-col justify-between select-none">
+
+  <!-- Hiệu ứng ánh hào quang chân trời -->
+  <div class="sun-glow"></div>
+
+  <!-- Bầu trời đầy mây tự động trôi -->
+  <div id="cloud-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <!-- Các đám mây sẽ được thêm tự động bằng Javascript -->
+  </div>
+
+  <!-- KHU VỰC ĐẦU TRANG (Header): Logo CMB -->
+  <header class="p-6 md:p-10 relative z-30 flex justify-between items-start">
+    <div class="flex items-center space-x-2">
+      <!-- Tải ảnh Logo.png thực tế từ thư mục -->
+      <img id="logo-img" src="Logo.png" alt="CMB Logo" class="w-32 h-auto md:w-44 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] object-contain" onerror="this.style.display='none'; document.getElementById('logo-svg').classList.remove('hidden');">
+      
+      <!-- Bản vẽ vector SVG dự phòng -->
+      <svg id="logo-svg" class="hidden w-32 h-16 md:w-44 md:h-22 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="100" cy="55" rx="94" ry="50" stroke="#0052d4" stroke-width="4.5" fill="white"/>
+        <ellipse cx="100" cy="55" rx="87" ry="43" stroke="#0052d4" stroke-width="1.5"/>
+        <line x1="16" y1="56" x2="184" y2="56" stroke="#0052d4" stroke-width="3"/>
+        <line x1="18" y1="65" x2="182" y2="65" stroke="#0052d4" stroke-width="3"/>
+        <line x1="24" y1="74" x2="176" y2="74" stroke="#0052d4" stroke-width="3"/>
+        <line x1="36" y1="83" x2="164" y2="83" stroke="#0052d4" stroke-width="3"/>
+        <line x1="52" y1="92" x2="148" y2="92" stroke="#0052d4" stroke-width="3"/>
+        <text x="100" y="66" font-family="'Times New Roman', Times, 'Georgia', serif" font-weight="900" font-style="italic" font-size="56" fill="#e11d48" text-anchor="middle" style="letter-spacing: -2px;">CMB</text>
+      </svg>
+    </div>
+
+    <!-- Nút Cài đặt góc trên bên phải -->
+    <button id="config-btn" class="p-3 bg-white/10 hover:bg-white/20 transition-all rounded-full border border-white/20 text-white flex items-center justify-center shadow-lg group">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform group-hover:rotate-90 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    </button>
+  </header>
+
+  <!-- KHU VỰC CHÍNH (Main): Đếm ngược thời gian
+       - SỬA ĐỔI: Sử dụng pb-[35vh] sm:pb-[30vh] md:pb-[25vh] để đẩy toàn bộ khối chữ và số lên phần cao hơn của bầu trời, hoàn toàn nằm trên mặt nước biển một cách cân đối và thoáng đãng -->
+  <main class="flex-grow flex flex-col justify-center items-center px-4 relative z-20 text-center pb-[35vh] sm:pb-[30vh] md:pb-[25vh]">
+    
+    <!-- Tiêu đề phụ (Bọc trong kén phát sáng có Sparkles lóe sáng hai góc) -->
+    <div class="mb-8 md:mb-10 px-8 py-2.5 rounded-full border border-cyan-400 bg-sky-950/40 neon-capsule inline-block max-w-[90%] transition-all duration-300 relative">
+      
+      <!-- Sparkle lóe sáng góc TRÊN - TRÁI -->
+      <svg class="absolute w-5 h-5 text-white animate-shine" style="top: -10px; left: 12%;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C12 2 12 12 2 12C12 12 12 22 12 22C12 22 12 12 22 12C12 12 12 2 12 2Z" fill="white" />
+      </svg>
+      
+      <!-- Sparkle lóe sáng góc DƯỚI - PHẢI -->
+      <svg class="absolute w-5 h-5 text-white animate-shine" style="bottom: -10px; right: 12%; animation-delay: 2s;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C12 2 12 12 2 12C12 12 12 22 12 22C12 22 12 12 22 12C12 12 12 2 12 2Z" fill="white" />
+      </svg>
+
+      <span id="display-subtitle" class="text-xs md:text-sm tracking-[0.25em] text-white font-semibold uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]">
+        TRUNG TÂM CÔNG NGHỆ THÔNG TIN & AI
+      </span>
+    </div>
+
+    <!-- Tiêu đề chính "COMING SOON !" kèm dải tia sáng chân trời và Lens Flare cực đẹp -->
+    <div class="flex items-center justify-center w-full max-w-5xl mb-10 md:mb-14 px-4">
+      
+      <!-- Dải tia sáng bên TRÁI -->
+      <div class="hidden sm:block flex-grow max-w-[150px] md:max-w-[250px] h-[1px] bg-gradient-to-r from-white to-transparent relative">
+        <!-- Ngôi sao lóe sáng cực đại bên trái -->
+        <svg class="absolute w-6 h-6 text-white animate-shine" style="top: -12px; left: -12px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C12 2 12 12 2 12C12 12 12 22 12 22C12 22 12 12 22 12C12 12 12 2 12 2Z" fill="white" />
+        </svg>
+      </div>
+      
+      <h1 id="display-title" class="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[0.25em] sm:tracking-[0.35em] px-6 uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] whitespace-nowrap">
+        COMING SOON !
+      </h1>
+      
+      <!-- Dải tia sáng bên PHẢI -->
+      <div class="hidden sm:block flex-grow max-w-[150px] md:max-w-[250px] h-[1px] bg-gradient-to-l from-white to-transparent relative">
+        <!-- Ngôi sao lóe sáng cực đại bên phải -->
+        <svg class="absolute w-6 h-6 text-white animate-shine" style="top: -12px; right: -12px; animation-delay: 1.5s;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C12 2 12 12 2 12C12 12 12 22 12 22C12 22 12 12 22 12C12 12 12 2 12 2Z" fill="white" />
+        </svg>
+      </div>
+
+    </div>
+
+    <!-- Khối đếm ngược luôn trên 1 dòng -->
+    <div class="flex items-center justify-center w-full max-w-4xl px-2 mx-auto relative z-20 whitespace-nowrap flex-row flex-nowrap">
+      
+      <!-- Cột Ngày -->
+      <div class="flex flex-col items-center flex-1 min-w-[55px] sm:min-w-[90px] md:min-w-[120px]">
+        <div id="days" class="text-white text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all">10</div>
+        <div class="text-sky-100 text-[9px] sm:text-xs md:text-sm tracking-[0.2em] font-semibold mt-3 uppercase opacity-85">NGÀY</div>
+      </div>
+
+      <!-- Đường kẻ phát sáng 1 -->
+      <div class="h-14 sm:h-24 md:h-32 flex justify-center items-center flex-shrink-0 px-2 sm:px-4">
+        <div class="divider-glow h-full"></div>
+      </div>
+
+      <!-- Cột Giờ -->
+      <div class="flex flex-col items-center flex-1 min-w-[55px] sm:min-w-[90px] md:min-w-[120px]">
+        <div id="hours" class="text-white text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all">03</div>
+        <div class="text-sky-100 text-[9px] sm:text-xs md:text-sm tracking-[0.2em] font-semibold mt-3 uppercase opacity-85">GIỜ</div>
+      </div>
+
+      <!-- Đường kẻ phát sáng 2 -->
+      <div class="h-14 sm:h-24 md:h-32 flex justify-center items-center flex-shrink-0 px-2 sm:px-4">
+        <div class="divider-glow h-full"></div>
+      </div>
+
+      <!-- Cột Phút -->
+      <div class="flex flex-col items-center flex-1 min-w-[55px] sm:min-w-[90px] md:min-w-[120px]">
+        <div id="minutes" class="text-white text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all">18</div>
+        <div class="text-sky-100 text-[9px] sm:text-xs md:text-sm tracking-[0.2em] font-semibold mt-3 uppercase opacity-85">PHÚT</div>
+      </div>
+
+      <!-- Đường kẻ phát sáng 3 -->
+      <div class="h-14 sm:h-24 md:h-32 flex justify-center items-center flex-shrink-0 px-2 sm:px-4">
+        <div class="divider-glow h-full"></div>
+      </div>
+
+      <!-- Cột Giây -->
+      <div class="flex flex-col items-center flex-1 min-w-[55px] sm:min-w-[90px] md:min-w-[120px]">
+        <div id="seconds" class="text-sky-300 text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all">33</div>
+        <div class="text-sky-100 text-[9px] sm:text-xs md:text-sm tracking-[0.2em] font-semibold mt-3 uppercase opacity-85">GIÂY</div>
+      </div>
+
+    </div>
+
+    <!-- Thông báo nhỏ khi quá hạn -->
+    <div id="event-message" class="hidden mt-8 text-white bg-emerald-500/20 border border-emerald-500/30 px-6 py-2 rounded-full text-sm font-medium tracking-wide">
+      Hệ thống đã chính thức đi vào hoạt động!
+    </div>
+  </main>
+
+  <!-- PHẦN SÓNG BIỂN CHUYỂN ĐỘNG Ở ĐÁY TRANG -->
+  <div class="wave-container">
+    <svg class="wave wave-1" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,60 C150,100 350,20 500,60 C650,100 850,20 1000,60 C1150,100 1350,20 1500,60 L1500,120 L0,120 Z" fill="#01317a"/>
+    </svg>
+    <svg class="wave wave-2" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,50 C180,10 300,90 480,50 C660,10 780,90 960,50 C1140,10 1260,90 1440,50 L1440,120 L0,120 Z" fill="#00439e"/>
+    </svg>
+    <svg class="wave wave-3" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,40 C120,80 240,10 360,40 C480,70 600,10 720,40 C840,70 960,10 1080,40 C1200,70 1320,10 1440,40 L1440,120 L0,120 Z" fill="#0359cc"/>
+    </svg>
+    <div class="sparkles"></div>
+  </div>
+
+  <!-- BẢNG CẤU HÌNH (SETTINGS MODAL) -->
+  <div id="config-modal" class="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-90 transition-all duration-300 text-white">
+      
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span>Cấu hình trang Go-Live</span>
+        </h3>
+        <button id="close-btn" class="text-gray-400 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="config-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-sky-300 uppercase tracking-wider mb-2" for="target-date">Thời gian Go-Live</label>
+          <input type="datetime-local" id="target-date" required class="w-full bg-slate-900/80 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400 transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-sky-300 uppercase tracking-wider mb-2" for="target-subtitle">Tiêu đề phụ</label>
+          <input type="text" id="target-subtitle" class="w-full bg-slate-900/80 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400 transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-sky-300 uppercase tracking-wider mb-2" for="target-title">Tiêu đề chính</label>
+          <input type="text" id="target-title" class="w-full bg-slate-900/80 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400 transition-colors">
+        </div>
+
+        <div class="flex space-x-3 pt-4">
+          <button type="button" id="reset-btn" class="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-lg py-2 text-sm font-medium transition-colors">Đặt lại mặc định</button>
+          <button type="submit" class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg py-2 text-sm transition-colors shadow-lg shadow-sky-500/25">Lưu cấu hình</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- THÔNG BÁO POPUP -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center space-x-3 translate-y-24 opacity-0 transition-all duration-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span id="toast-message" class="text-sm font-semibold">Đã lưu cấu hình thành công!</span>
+  </div>
+
+  <script>
+    // Khởi tạo mốc đếm ngược mặc định: 10 Ngày, 3 Giờ, 18 Phút, 33 Giây
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 10);
+    defaultDate.setHours(defaultDate.getHours() + 3);
+    defaultDate.setMinutes(defaultDate.getMinutes() + 18);
+    defaultDate.setSeconds(defaultDate.getSeconds() + 33);
+
+    const CONFIG_KEYS = {
+      TARGET_DATE: 'cmb_countdown_target',
+      SUBTITLE: 'cmb_countdown_subtitle',
+      TITLE: 'cmb_countdown_title'
+    };
+
+    const modal = document.getElementById('config-modal');
+    const configBtn = document.getElementById('config-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const configForm = document.getElementById('config-form');
+    const resetBtn = document.getElementById('reset-btn');
+    const toast = document.getElementById('toast');
+    
+    const inputDate = document.getElementById('target-date');
+    const inputSubtitle = document.getElementById('target-subtitle');
+    const inputTitle = document.getElementById('target-title');
+
+    const displaySubtitle = document.getElementById('display-subtitle');
+    const displayTitle = document.getElementById('display-title');
+    const eventMessage = document.getElementById('event-message');
+
+    let countdownInterval;
+
+    // Tự động tạo mây trôi tự nhiên đa tầng độ ngẫu nhiên cực cao
+    function createClouds() {
+      const cloudContainer = document.getElementById('cloud-container');
+      const numberOfClouds = 12; // Số lượng đám mây sinh động
+      
+      for (let i = 0; i < numberOfClouds; i++) {
+        const cloud = document.createElement('div');
+        cloud.classList.add('cloud');
+        
+        // Ngẫu nhiên hóa kích thước cực rộng (Từ 60px đến 280px)
+        const width = Math.random() * 220 + 60; 
+        cloud.style.setProperty('--cloud-w', `${width}px`);
+        
+        // Vị trí cao độ ngẫu nhiên trên bầu trời (từ 2% đến 50% phía trên)
+        const topPosition = Math.random() * 48 + 2;
+        cloud.style.top = `${topPosition}%`;
+        
+        // Tốc độ tỷ lệ nghịch với kích thước: mây nhỏ trôi chậm (ở xa), mây to trôi nhanh (ở gần)
+        const baseDuration = (300 - width) * (Math.random() * 0.5 + 0.75); // Từ 30s đến 240s
+        const duration = Math.max(30, Math.min(240, baseDuration));
+        cloud.style.animation = `drift ${duration}s linear infinite`;
+        
+        // Điểm xuất hiện so le ngẫu nhiên ban đầu để phân bổ đều
+        const delay = Math.random() * -duration;
+        cloud.style.animationDelay = `${delay}s`;
+
+        // Độ mờ đục và chiều sâu sắp xếp theo kích thước
+        const opacity = (width / 280) * 0.35 + 0.5; // Dao động từ 0.57 đến 0.85
+        cloud.style.opacity = opacity;
+        
+        const zIndex = Math.floor(width / 50) + 1; // z-index dao động từ 2 đến 6
+        cloud.style.zIndex = zIndex;
+
+        // Blur ngẫu nhiên tỉ lệ để tạo DOF tự nhiên
+        const blurValue = Math.max(2, 6 - (width / 60)); // Dao động từ 2px đến 5px
+        cloud.style.filter = `blur(${blurValue}px)`;
+
+        cloudContainer.appendChild(cloud);
+      }
+    }
+
+    function loadConfig() {
+      let savedDate = localStorage.getItem(CONFIG_KEYS.TARGET_DATE);
+      let savedSubtitle = localStorage.getItem(CONFIG_KEYS.SUBTITLE);
+      let savedTitle = localStorage.getItem(CONFIG_KEYS.TITLE);
+
+      if (!savedDate) {
+        savedDate = defaultDate.toISOString();
+        localStorage.setItem(CONFIG_KEYS.TARGET_DATE, savedDate);
+      }
+      if (!savedSubtitle) {
+        savedSubtitle = "TRUNG TÂM CÔNG NGHỆ THÔNG TIN & AI";
+        localStorage.setItem(CONFIG_KEYS.SUBTITLE, savedSubtitle);
+      }
+      if (!savedTitle) {
+        savedTitle = "COMING SOON !";
+        localStorage.setItem(CONFIG_KEYS.TITLE, savedTitle);
+      }
+
+      displaySubtitle.textContent = savedSubtitle;
+      displayTitle.textContent = savedTitle;
+
+      const localFormat = new Date(savedDate);
+      localFormat.setMinutes(localFormat.getMinutes() - localFormat.getTimezoneOffset());
+      inputDate.value = localFormat.toISOString().slice(0, 16);
+      
+      inputSubtitle.value = savedSubtitle;
+      inputTitle.value = savedTitle;
+
+      startCountdown(new Date(savedDate));
+    }
+
+    function showToast(message) {
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    function startCountdown(targetDate) {
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      const dVal = document.getElementById('days');
+      const hVal = document.getElementById('hours');
+      const mVal = document.getElementById('minutes');
+      const sVal = document.getElementById('seconds');
+
+      function update() {
+        const now = new Date().getTime();
+        const difference = targetDate.getTime() - now;
+
+        if (difference <= 0) {
+          dVal.textContent = '00';
+          hVal.textContent = '00';
+          mVal.textContent = '00';
+          sVal.textContent = '00';
+          eventMessage.classList.remove('hidden');
+          clearInterval(countdownInterval);
+          return;
+        }
+
+        eventMessage.classList.add('hidden');
+
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        dVal.textContent = days.toString().padStart(2, '0');
+        hVal.textContent = hours.toString().padStart(2, '0');
+        mVal.textContent = minutes.toString().padStart(2, '0');
+        sVal.textContent = seconds.toString().padStart(2, '0');
+      }
+
+      update();
+      countdownInterval = setInterval(update, 1000);
+    }
+
+    configBtn.addEventListener('click', () => {
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.firstElementChild.classList.remove('scale-90');
+      modal.firstElementChild.classList.add('scale-100');
+    });
+
+    function closeModal() {
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modal.firstElementChild.classList.add('scale-90');
+      modal.firstElementChild.classList.remove('scale-100');
+    }
+    
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    configForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newTarget = new Date(inputDate.value);
+      localStorage.setItem(CONFIG_KEYS.TARGET_DATE, newTarget.toISOString());
+      localStorage.setItem(CONFIG_KEYS.SUBTITLE, inputSubtitle.value.trim().toUpperCase());
+      localStorage.setItem(CONFIG_KEYS.TITLE, inputTitle.value.trim().toUpperCase());
+
+      loadConfig();
+      closeModal();
+      showToast("Đã lưu cấu hình Go-Live thành công!");
+    });
+
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(CONFIG_KEYS.TARGET_DATE);
+      localStorage.removeItem(CONFIG_KEYS.SUBTITLE);
+      localStorage.removeItem(CONFIG_KEYS.TITLE);
+      
+      loadConfig();
+      closeModal();
+      showToast("Đã đặt lại cấu hình mặc định!");
+    });
+
+    window.onload = function () {
+      createClouds();
+      loadConfig();
+    };
+  </script>
+</body>
+</html>
