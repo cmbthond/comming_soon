@@ -586,9 +586,51 @@
       showToast("Đã đặt lại cấu hình mặc định!");
     });
 
+    function requestPageFullscreen() {
+      const page = document.documentElement;
+      const requestFullscreen =
+        page.requestFullscreen ||
+        page.webkitRequestFullscreen ||
+        page.msRequestFullscreen;
+
+      if (document.fullscreenElement || document.webkitFullscreenElement || !requestFullscreen) {
+        return;
+      }
+
+      const fullscreenRequest = requestFullscreen.call(page);
+      if (fullscreenRequest && typeof fullscreenRequest.catch === 'function') {
+        fullscreenRequest.catch(() => {});
+      }
+    }
+
+    function enableFullscreenOnFirstInteraction() {
+      const events = ['click', 'touchstart', 'keydown'];
+
+      function enterFullscreenOnce(event) {
+        if (event.type === 'keydown' && event.key === 'Escape') return;
+
+        requestPageFullscreen();
+        events.forEach((eventName) => {
+          document.removeEventListener(eventName, enterFullscreenOnce);
+        });
+      }
+
+      events.forEach((eventName) => {
+        document.addEventListener(eventName, enterFullscreenOnce, { passive: true });
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'F11' || event.key.toLowerCase() === 'f') {
+        requestPageFullscreen();
+      }
+    });
+
     window.onload = function () {
       createClouds();
       loadConfig();
+      requestPageFullscreen();
+      enableFullscreenOnFirstInteraction();
     };
   </script>
 </body>
