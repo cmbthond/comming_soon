@@ -192,19 +192,9 @@
   <header class="p-6 md:p-10 relative z-30 flex justify-between items-start">
     <div class="flex items-center space-x-2">
       <!-- Tải ảnh Logo.png thực tế từ thư mục -->
-      <img id="logo-img" src="Logo.png" alt="CMB Logo" class="w-32 h-auto md:w-44 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] object-contain" onerror="this.style.display='none'; document.getElementById('logo-svg').classList.remove('hidden');">
+      <img id="logo-img" src="logo.png" alt="CMB Logo" class="w-32 h-auto md:w-44 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] object-contain">
       
       <!-- Bản vẽ vector SVG dự phòng -->
-      <svg id="logo-svg" class="hidden w-32 h-16 md:w-44 md:h-22 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="100" cy="55" rx="94" ry="50" stroke="#0052d4" stroke-width="4.5" fill="white"/>
-        <ellipse cx="100" cy="55" rx="87" ry="43" stroke="#0052d4" stroke-width="1.5"/>
-        <line x1="16" y1="56" x2="184" y2="56" stroke="#0052d4" stroke-width="3"/>
-        <line x1="18" y1="65" x2="182" y2="65" stroke="#0052d4" stroke-width="3"/>
-        <line x1="24" y1="74" x2="176" y2="74" stroke="#0052d4" stroke-width="3"/>
-        <line x1="36" y1="83" x2="164" y2="83" stroke="#0052d4" stroke-width="3"/>
-        <line x1="52" y1="92" x2="148" y2="92" stroke="#0052d4" stroke-width="3"/>
-        <text x="100" y="66" font-family="'Times New Roman', Times, 'Georgia', serif" font-weight="900" font-style="italic" font-size="56" fill="#e11d48" text-anchor="middle" style="letter-spacing: -2px;">CMB</text>
-      </svg>
     </div>
 
     <!-- Nút Cài đặt góc trên bên phải -->
@@ -379,11 +369,32 @@
 
   <script>
     // Khởi tạo mốc đếm ngược mặc định: 10 Ngày, 3 Giờ, 18 Phút, 33 Giây
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 10);
-    defaultDate.setHours(defaultDate.getHours() + 3);
-    defaultDate.setMinutes(defaultDate.getMinutes() + 18);
-    defaultDate.setSeconds(defaultDate.getSeconds() + 33);
+    // Set ngay gio cu the tai day, dinh dang: YYYY-MM-DDTHH:mm:ss
+    // Vi du: const SPECIFIC_TARGET_DATETIME = '2026-07-02T08:30:00';
+    // De rong thi se dung moc mac dinh: 10 ngay, 3 gio, 18 phut, 33 giay.
+    const SPECIFIC_TARGET_DATETIME = '2026-07-02T07:30:00';
+
+    function getSpecificTargetDate() {
+      if (!SPECIFIC_TARGET_DATETIME) return null;
+
+      const specificDate = new Date(SPECIFIC_TARGET_DATETIME);
+      return Number.isNaN(specificDate.getTime()) ? null : specificDate;
+    }
+
+    function getDefaultTargetDate() {
+      const specificDate = getSpecificTargetDate();
+      if (specificDate) return specificDate;
+
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 10);
+      defaultDate.setHours(defaultDate.getHours() + 3);
+      defaultDate.setMinutes(defaultDate.getMinutes() + 18);
+      defaultDate.setSeconds(defaultDate.getSeconds() + 33);
+
+      return defaultDate;
+    }
+
+    const defaultDate = getDefaultTargetDate();
 
     const CONFIG_KEYS = {
       TARGET_DATE: 'cmb_countdown_target',
@@ -454,7 +465,11 @@
       let savedSubtitle = localStorage.getItem(CONFIG_KEYS.SUBTITLE);
       let savedTitle = localStorage.getItem(CONFIG_KEYS.TITLE);
 
-      if (!savedDate) {
+      const specificDate = getSpecificTargetDate();
+      if (specificDate) {
+        savedDate = specificDate.toISOString();
+        localStorage.setItem(CONFIG_KEYS.TARGET_DATE, savedDate);
+      } else if (!savedDate) {
         savedDate = defaultDate.toISOString();
         localStorage.setItem(CONFIG_KEYS.TARGET_DATE, savedDate);
       }
