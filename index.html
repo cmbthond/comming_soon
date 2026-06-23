@@ -176,9 +176,54 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    .gallery-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #020617;
+    }
+
+    .gallery-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .gallery-counter {
+      position: absolute;
+      right: 24px;
+      bottom: 20px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(2, 6, 23, 0.65);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    body.has-gallery .gallery-screen {
+      display: flex;
+    }
+
+    body.has-gallery .sun-glow,
+    body.has-gallery #cloud-container,
+    body.has-gallery main,
+    body.has-gallery .wave-container,
+    body.has-gallery #logo-img {
+      display: none;
+    }
   </style>
 </head>
 <body class="relative min-h-screen w-full flex flex-col justify-between select-none">
+
+  <section id="gallery-screen" class="gallery-screen" aria-label="Uploaded image display">
+    <img id="gallery-image" alt="Uploaded display image">
+    <div id="gallery-counter" class="gallery-counter hidden"></div>
+  </section>
 
   <!-- Hiệu ứng ánh hào quang chân trời -->
   <div class="sun-glow"></div>
@@ -319,7 +364,7 @@
 
   <!-- BẢNG CẤU HÌNH (SETTINGS MODAL) -->
   <div id="config-modal" class="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
-    <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-90 transition-all duration-300 text-white">
+    <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl transform scale-90 transition-all duration-300 text-white max-h-[92vh] overflow-y-auto">
       
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-bold flex items-center space-x-2">
@@ -351,6 +396,15 @@
           <input type="text" id="target-title" class="w-full bg-slate-900/80 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400 transition-colors">
         </div>
 
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-sky-300 uppercase tracking-wider mb-2" for="gallery-upload">Ảnh hiển thị thay màn hình Coming Soon</label>
+            <input type="file" id="gallery-upload" accept="image/*" multiple class="w-full text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-sky-500 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-sky-600">
+          </div>
+          <div id="gallery-list" class="text-xs text-slate-200 space-y-1"></div>
+          <button type="button" id="clear-gallery-btn" class="hidden w-full bg-red-500/15 hover:bg-red-500/25 border border-red-300/20 text-red-100 rounded-lg py-2 text-sm font-medium transition-colors">Xóa ảnh đang hiển thị</button>
+        </div>
+
         <div class="flex space-x-3 pt-4">
           <button type="button" id="reset-btn" class="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-lg py-2 text-sm font-medium transition-colors">Đặt lại mặc định</button>
           <button type="submit" class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg py-2 text-sm transition-colors shadow-lg shadow-sky-500/25">Lưu cấu hình</button>
@@ -373,6 +427,9 @@
     // Vi du: const SPECIFIC_TARGET_DATETIME = '2026-07-02T08:30:00';
     // De rong thi se dung moc mac dinh: 10 ngay, 3 gio, 18 phut, 33 giay.
     const SPECIFIC_TARGET_DATETIME = '2026-07-02T07:30:00';
+    const DEFAULT_GALLERY_IMAGES = [
+      { name: 'Lịch đào tạo User.png', dataUrl: 'lich-dao-tao.png' }
+    ];
 
     function getSpecificTargetDate() {
       if (!SPECIFIC_TARGET_DATETIME) return null;
@@ -399,7 +456,8 @@
     const CONFIG_KEYS = {
       TARGET_DATE: 'cmb_countdown_target',
       SUBTITLE: 'cmb_countdown_subtitle',
-      TITLE: 'cmb_countdown_title'
+      TITLE: 'cmb_countdown_title',
+      GALLERY_IMAGES: 'cmb_gallery_images'
     };
 
     const modal = document.getElementById('config-modal');
@@ -412,12 +470,20 @@
     const inputDate = document.getElementById('target-date');
     const inputSubtitle = document.getElementById('target-subtitle');
     const inputTitle = document.getElementById('target-title');
+    const inputGallery = document.getElementById('gallery-upload');
+    const galleryList = document.getElementById('gallery-list');
+    const clearGalleryBtn = document.getElementById('clear-gallery-btn');
 
     const displaySubtitle = document.getElementById('display-subtitle');
     const displayTitle = document.getElementById('display-title');
     const eventMessage = document.getElementById('event-message');
+    const galleryImage = document.getElementById('gallery-image');
+    const galleryCounter = document.getElementById('gallery-counter');
 
     let countdownInterval;
+    let galleryInterval;
+    let currentGalleryImages = [];
+    let currentGalleryIndex = 0;
 
     // Tự động tạo mây trôi tự nhiên đa tầng độ ngẫu nhiên cực cao
     function createClouds() {
@@ -460,10 +526,85 @@
       }
     }
 
+    function getStoredGalleryImages() {
+      const rawImages = localStorage.getItem(CONFIG_KEYS.GALLERY_IMAGES);
+      if (rawImages === null) return DEFAULT_GALLERY_IMAGES;
+
+      try {
+        const parsedImages = JSON.parse(rawImages);
+        return Array.isArray(parsedImages)
+          ? parsedImages.filter((image) => image && image.name && image.dataUrl)
+          : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function updateGalleryList(images) {
+      if (!images.length) {
+        galleryList.textContent = 'Chưa có ảnh nào. Khi không có ảnh, trang sẽ hiển thị màn hình Coming Soon.';
+        clearGalleryBtn.classList.add('hidden');
+        return;
+      }
+
+      galleryList.replaceChildren(...images.map((image, index) => {
+        const item = document.createElement('div');
+        item.textContent = `${index + 1}. ${image.name}`;
+        return item;
+      }));
+      clearGalleryBtn.classList.remove('hidden');
+    }
+
+    function showGalleryImage(index) {
+      if (!currentGalleryImages.length) return;
+
+      currentGalleryIndex = index % currentGalleryImages.length;
+      const activeImage = currentGalleryImages[currentGalleryIndex];
+      galleryImage.src = activeImage.dataUrl;
+      galleryCounter.textContent = `${currentGalleryIndex + 1}/${currentGalleryImages.length}`;
+      galleryCounter.classList.toggle('hidden', currentGalleryImages.length <= 1);
+    }
+
+    function renderGallery(images) {
+      currentGalleryImages = images;
+      currentGalleryIndex = 0;
+      if (galleryInterval) clearInterval(galleryInterval);
+
+      updateGalleryList(images);
+
+      if (!images.length) {
+        document.body.classList.remove('has-gallery');
+        galleryImage.removeAttribute('src');
+        galleryCounter.classList.add('hidden');
+        return;
+      }
+
+      document.body.classList.add('has-gallery');
+      showGalleryImage(0);
+
+      if (images.length > 1) {
+        galleryInterval = setInterval(() => {
+          showGalleryImage(currentGalleryIndex + 1);
+        }, 8000);
+      }
+    }
+
+    function readUploadedImages(files) {
+      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+
+      return Promise.all(imageFiles.map((file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      })));
+    }
+
     function loadConfig() {
       let savedDate = localStorage.getItem(CONFIG_KEYS.TARGET_DATE);
       let savedSubtitle = localStorage.getItem(CONFIG_KEYS.SUBTITLE);
       let savedTitle = localStorage.getItem(CONFIG_KEYS.TITLE);
+      const savedGalleryImages = getStoredGalleryImages();
 
       const specificDate = getSpecificTargetDate();
       if (specificDate) {
@@ -491,6 +632,8 @@
       
       inputSubtitle.value = savedSubtitle;
       inputTitle.value = savedTitle;
+      inputGallery.value = '';
+      renderGallery(savedGalleryImages);
 
       startCountdown(new Date(savedDate));
     }
@@ -563,7 +706,7 @@
       if (e.target === modal) closeModal();
     });
 
-    configForm.addEventListener('submit', (e) => {
+    configForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const newTarget = new Date(inputDate.value);
@@ -571,15 +714,32 @@
       localStorage.setItem(CONFIG_KEYS.SUBTITLE, inputSubtitle.value.trim().toUpperCase());
       localStorage.setItem(CONFIG_KEYS.TITLE, inputTitle.value.trim().toUpperCase());
 
-      loadConfig();
-      closeModal();
-      showToast("Đã lưu cấu hình Go-Live thành công!");
+      try {
+        if (inputGallery.files.length) {
+          const uploadedImages = await readUploadedImages(inputGallery.files);
+          localStorage.setItem(CONFIG_KEYS.GALLERY_IMAGES, JSON.stringify(uploadedImages));
+        }
+
+        loadConfig();
+        closeModal();
+        showToast("Đã lưu cấu hình Go-Live thành công!");
+      } catch (error) {
+        showToast("Không thể lưu ảnh. Vui lòng thử ảnh nhỏ hơn hoặc ít ảnh hơn.");
+      }
+    });
+
+    clearGalleryBtn.addEventListener('click', () => {
+      localStorage.setItem(CONFIG_KEYS.GALLERY_IMAGES, JSON.stringify([]));
+      inputGallery.value = '';
+      renderGallery([]);
+      showToast("Đã xóa ảnh hiển thị!");
     });
 
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(CONFIG_KEYS.TARGET_DATE);
       localStorage.removeItem(CONFIG_KEYS.SUBTITLE);
       localStorage.removeItem(CONFIG_KEYS.TITLE);
+      localStorage.removeItem(CONFIG_KEYS.GALLERY_IMAGES);
       
       loadConfig();
       closeModal();
