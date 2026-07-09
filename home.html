@@ -219,6 +219,7 @@
   </style>
 </head>
 <body class="relative min-h-screen w-full flex flex-col justify-between select-none">
+  <audio id="backgroundMusic" src="sound.mp3" preload="auto" loop></audio>
 
   <section id="gallery-screen" class="gallery-screen" aria-label="Uploaded image display">
     <img id="gallery-image" alt="Uploaded display image">
@@ -765,6 +766,17 @@
       }
     }
 
+    function playBackgroundMusic() {
+      const backgroundMusic = document.getElementById('backgroundMusic');
+      if (!backgroundMusic || !backgroundMusic.paused) return;
+
+      backgroundMusic.volume = 0.6;
+      const playRequest = backgroundMusic.play();
+      if (playRequest && typeof playRequest.catch === 'function') {
+        playRequest.catch(() => {});
+      }
+    }
+
     function enableFullscreenOnFirstInteraction() {
       const events = ['click', 'touchstart', 'keydown'];
 
@@ -772,6 +784,7 @@
         if (event.type === 'keydown' && event.key === 'Escape') return;
 
         requestPageFullscreen();
+        playBackgroundMusic();
         events.forEach((eventName) => {
           document.removeEventListener(eventName, enterFullscreenOnce);
         });
@@ -791,6 +804,7 @@
     window.onload = function () {
       createClouds();
       loadConfig();
+      playBackgroundMusic();
       requestPageFullscreen();
       enableFullscreenOnFirstInteraction();
     };
